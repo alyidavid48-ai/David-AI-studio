@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b12">
+<title>DAVID ALYI STUDIO</title>
+<style>
+:root{--bg:#090b12;--panel:#121625;--panel2:#171c2d;--line:#2a3045;--text:#f5f6ff;--muted:#9ba3b8;--purple:#9276ff;--cyan:#63d8ce}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.top{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line);background:#0e1220;position:sticky;top:0;z-index:10}
+.brand{font-weight:850;letter-spacing:1px;font-size:16px}.brand b{color:var(--purple)}.topright{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:11px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);display:inline-block}
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 64px)}
+aside{border-right:1px solid var(--line);padding:18px 12px;background:#0d111d}
+.group{color:#68728b;font-size:10px;letter-spacing:1.5px;margin:16px 10px 8px}
+.nav{width:100%;border:0;background:transparent;color:#aeb6cb;padding:11px 12px;text-align:left;border-radius:9px;margin:2px 0}
+.nav:hover,.nav.active{background:#24213b;color:#fff}.nav.active{box-shadow:inset 3px 0 var(--purple)}
+main{width:100%;max-width:1250px;margin:auto;padding:26px}
+.view{display:none}.view.active{display:block}
+.hero{padding:24px;border:1px solid #34304f;border-radius:17px;background:radial-gradient(ellipse at 90% 0%,#33265c 0,transparent 48%),linear-gradient(135deg,#171a2b,#101421);margin-bottom:20px}
+.eyebrow{font-size:10px;letter-spacing:2px;color:#b7a8ff;font-weight:700}
+h1{font-size:clamp(25px,4vw,36px);line-height:1.15;margin:10px 0}
+h1 span{color:#b3a0ff}.lead{color:var(--muted);max-width:720px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px}
+.card{cursor:pointer;transition:.18s}.card:hover{border-color:var(--purple);transform:translateY(-2px)}
+.icon{font-size:25px;margin-bottom:10px}.card h3{margin:0 0 5px;font-size:14px}.card p,.muted{color:var(--muted);font-size:12px;margin:0}
+.tag{display:inline-block;color:#b8a8ff;font-size:10px;margin-top:12px;font-weight:700;letter-spacing:.7px}
+h2{font-size:18px;margin:0 0 8px}h3{font-size:14px}
+.btn{border:1px solid var(--line);border-radius:9px;padding:10px 14px;background:var(--panel2);color:var(--text)}
+.btn.primary{background:var(--purple);border-color:var(--purple);color:white;font-weight:700}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+textarea,input[type=text],select{width:100%;border:1px solid var(--line);border-radius:10px;background:#0b101b;color:white;padding:12px;outline:none}
+textarea:focus,input:focus,select:focus{border-color:var(--purple)}
+textarea{min-height:110px;resize:vertical}
+.chatbox{margin-top:14px;background:#0c111d;border:1px solid var(--line);border-radius:13px;padding:12px}
+.messages{min-height:60px;max-height:330px;overflow:auto;margin-bottom:10px}
+.msg{padding:11px 12px;border-radius:10px;margin:8px 0;white-space:pre-wrap;font-size:13px}
+.msg.user{background:#282342;margin-left:10%}.msg.ai{background:#172333;margin-right:10%;border-left:2px solid var(--cyan)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.toolhead{margin:4px 0 18px}.toolhead p{color:var(--muted);margin:5px 0}
+.filebox{border:1px dashed #4b5270;border-radius:12px;padding:18px;text-align:center;background:#0d1220}
+.preview{max-width:100%;max-height:300px;border-radius:10px;margin-top:12px;display:none}
+.project{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+pre{white-space:pre-wrap;overflow:auto;background:#090e18;padding:14px;border-radius:10px;color:#d6d9e7;font-size:12px}
+.notice{font-size:11px;color:#8791a8;margin-top:12px}
+.status{font-size:11px;color:#b8a8ff}
+footer{padding:25px;text-align:center;color:#667089;font-size:10px}
+@media(max-width:760px){.shell{grid-template-columns:1fr}aside{display:flex;overflow-x:auto;gap:4px;padding:8px;border-right:0;border-bottom:1px solid var(--line);position:sticky;top:64px;z-index:8}.group{display:none}.nav{white-space:nowrap;width:auto;flex:0 0 auto;margin:0;padding:10px}.nav.active{box-shadow:inset 0 -3px var(--purple)}main{padding:17px 13px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}}
+@media(max-width:390px){.grid{grid-template-columns:1fr}.topright .statusword{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="brand">DAVID <b>ALYI</b> STUDIO</div>
+ <div class="topright"><span class="dot"></span><span class="statusword">CREATIVE WORKSPACE</span><span id="clock"></span></div>
+</header>
+<div class="shell">
+<aside>
+ <div class="group">WORKSPACE</div>
+ <button class="nav active" data-view="home">✦ MY AI</button>
+ <button class="nav" data-view="development">⌘ Development</button>
+ <button class="nav" data-view="image">▧ Image Studio</button>
+ <button class="nav" data-view="video">▶ Video Studio</button>
+ <button class="nav" data-view="audio">♫ Audio Studio</button>
+ <button class="nav" data-view="editor">✂ Media Editor</button>
+ <button class="nav" data-view="projects">▤ Projects</button>
+ <div class="group">SYSTEM</div>
+ <button class="nav" data-view="about">⚙ About & Setup</button>
+</aside>
+<main>
+<section class="view active" id="home">
+ <div class="hero">
+  <div class="eyebrow">YOUR CREATIVE INTELLIGENCE PLATFORM</div>
+  <h1>Make ideas become <span>reality.</span></h1>
+  <p class="lead">One workspace for thinking, designing, developing and producing. Start with MY AI, then move into the tools for your project.</p>
+  <div class="toolbar"><button class="btn primary" onclick="showView('development')">Open Development Studio →</button><button class="btn" onclick="showView('projects')">My projects</button></div>
+ </div>
+ <div class="panel">
+  <div class="row"><div><h2>✦ MY AI</h2><p class="muted">Your central assistant workspace</p></div><span class="status">DEMO MODE · AI NOT CONNECTED</span></div>
+  <div class="chatbox"><div class="messages" id="messages"><div class="msg ai">Welcome to DAVID ALYI STUDIO. I’m your workspace assistant interface. You can describe a goal below. A real AI model must be connected through a secure backend before I can answer freely or perform AI tasks.</div></div>
+   <textarea id="chatInput" placeholder="Ask a question or describe what you want to create..."></textarea>
+   <div class="row"><span class="muted">Your messages stay in this browser session.</span><button class="btn primary" onclick="sendMessage()">Send message ↑</button></div>
+  </div>
+  <p class="notice">This prototype does not pretend to be connected to an AI service. Real AI requires a provider account and a secure server-side API connection.</p>
+ </div>
+ <h2 style="margin:22px 0 13px">Choose a workspace</h2>
+ <div class="grid">
+  <div class="card" onclick="showView('development')"><div class="icon">⌘</div><h3>Development Studio</h3><p>Plan websites, apps, software and code projects.</p><span class="tag">BUILD PROJECTS →</span></div>
+  <div class="card" onclick="showView('image')"><div class="icon">🎨</div><h3>Image Studio</h3><p>Prepare image concepts and editing tasks.</p><span class="tag">VISUAL WORK →</span></div>
+  <div class="card" onclick="showView('video')"><div class="icon">🎬</div><h3>Video Studio</h3><p>Plan scenes, scripts and video productions.</p><span class="tag">VIDEO WORK →</span></div>
+  <div class="card" onclick="showView('audio')"><div class="icon">🎧</div><h3>Audio Studio</h3><p>Organize music, voice and sound projects.</p><span class="tag">AUDIO WORK →</span></div>
+  <div class="card" onclick="showView('editor')"><div class="icon">✂️</div><h3>Media Editor</h3><p>Select and preview your media assets.</p><span class="tag">EDIT MEDIA →</span></div>
+  <div class="card" onclick="showView('projects')"><div class="icon">📁</div><h3>Project Center</h3><p>Keep track of ideas and project notes.</p><span class="tag">MANAGE →</span></div>
+ </div>
+</section>
+
+<section class="view" id="development">
+ <div class="toolhead"><div class="eyebrow">BUILD · DEBUG · LEARN</div><h1>Development <span>Studio</span></h1><p>Organize software ideas and work with code. This first version is a planning workspace; it does not yet execute code or build APKs.</p></div>
+ <div class="two">
+  <div class="panel"><h2>New development project</h2><p class="muted">Describe what you want to build.</p><textarea id="devIdea" placeholder="Example: Build a responsive online store with user accounts and a product catalogue..."></textarea><div class="toolbar"><button class="btn primary" onclick="saveProject('Development',document.getElementById('devIdea').value)">Save project idea</button></div></div>
+  <div class="panel"><h2>Development checklist</h2><p class="muted">A professional project normally moves through these stages:</p><p>01 · Requirements and features</p><p>02 · UI/UX design</p><p>03 · Frontend development</p><p>04 · Backend and database</p><p>05 · Testing and security</p><p>06 · Deployment and maintenance</p></div>
+ </div>
+ <div class="panel" style="margin-top:14px"><h2>Code notes</h2><p class="muted">Use this area to draft or store a code snippet locally as a project note.</p><textarea id="codeNotes" placeholder="Paste or write code notes here..."></textarea><button class="btn" onclick="saveProject('Code notes',document.getElementById('codeNotes').value)">Save code notes</button></div>
+</section>
+
+<section class="view" id="image">
+ <div class="toolhead"><div class="eyebrow">VISUAL CREATION</div><h1>Image <span>Studio</span></h1><p>Prepare a visual brief and preview images from your phone.</p></div>
+ <div class="two"><div class="panel"><h2>Image brief</h2><textarea id="imageBrief" placeholder="Describe subject, style, lighting, background, colours and aspect ratio..."></textarea><button class="btn primary" onclick="saveProject('Image brief',document.getElementById('imageBrief').value)">Save image brief</button><p class="notice">AI image generation is not connected in this offline starter.</p></div><div class="panel"><h2>Preview an image</h2><div class="filebox"><input type="file" id="imageFile" accept="image/*"><p class="muted">Choose an image from your device.</p><img id="imagePreview" class="preview" alt="Selected image preview"></div></div></div>
+</section>
+
+<section class="view" id="video">
+ <div class="toolhead"><div class="eyebrow">MOTION & STORY</div><h1>Video <span>Studio</span></h1><p>Prepare scripts, shot lists and production plans.</p></div>
+ <div class="panel"><h2>Video production brief</h2><textarea id="videoBrief" placeholder="Describe the story, duration, scenes, camera movement, mood, music and format..."></textarea><div class="toolbar"><button class="btn primary" onclick="saveProject('Video brief',document.getElementById('videoBrief').value)">Save video brief</button></div><p class="notice">Video generation and rendering require external services and are not active yet.</p></div>
+</section>
+
+<section class="view" id="audio">
+ <div class="toolhead"><div class="eyebrow">VOICE · MUSIC · SOUND</div><h1>Audio <span>Studio</span></h1><p>Keep your audio assets and production notes organized.</p></div>
+ <div class="panel"><h2>Choose an audio file</h2><input type="file" id="audioFile" accept="audio/*"><audio id="audioPreview" controls style="width:100%;margin-top:15px;display:none"></audio><textarea id="audioNotes" placeholder="Write your recording, mixing or music production notes..." style="margin-top:15px"></textarea><button class="btn primary" onclick="saveProject('Audio notes',document.getElementById('audioNotes').value)">Save audio notes</button><p class="notice">This workspace can preview a selected audio file. It does not yet mix or master audio.</p></div>
+</section>
+
+<section class="view" id="editor">
+ <div class="toolhead"><div class="eyebrow">MEDIA WORKSPACE</div><h1>Media <span>Editor</span></h1><p>Select media to preview and prepare your editing workflow.</p></div>
+ <div class="panel"><h2>Import media</h2><input type="file" id="mediaFiles" accept="image/*,video/*,audio/*" multiple><div id="mediaList" class="muted" style="margin-top:14px">No files selected.</div><p class="notice">A real multi-track timeline, effects and export engine will be developed separately. This page does not render edited videos yet.</p></div>
+</section>
+
+<section class="view" id="projects">
+ <div class="toolhead"><div class="eyebrow">YOUR WORK</div><h1>Project <span>Center</span></h1><p>Saved project notes are stored locally in this browser on this device.</p></div>
+ <div class="panel"><div class="row"><h2>Saved projects</h2><button class="btn" onclick="clearProjects()">Clear all</button></div><div id="projectList" class="muted" style="margin-top:12px">No saved projects yet.</div></div>
+</section>
+
+<section class="view" id="about">
+ <div class="toolhead"><div class="eyebrow">PLATFORM INFORMATION</div><h1>About & <span>Setup</span></h1></div>
+ <div class="panel"><h2>DAVID ALYI STUDIO — Starter Edition</h2><p>This is a front-end prototype designed to run in a mobile browser. It provides navigation, local project notes and media previews.</p><h3>What is not connected yet?</h3><p>• Real conversational AI</p><p>• AI image and video generation</p><p>• Cloud database and user accounts</p><p>• Professional timeline editing and media rendering</p><p>• App packaging and deployment</p><h3>Security</h3><p>Never paste an AI API key into this HTML file. The production version must call a secure backend that stores provider keys on the server.</p><h3>Next development stage</h3><p>Build and deploy a secure backend, then connect MY AI to a real model. After that, implement the development tools and creative integrations in stages.</p></div>
+</section>
+<footer>DAVID ALYI STUDIO · STARTER EDITION · Built for mobile-first development</footer>
+</main>
+</div>
+<script>
+const navs=[...document.querySelectorAll('.nav')];
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));navs.forEach(n=>n.classList.toggle('active',n.dataset.view===id));window.scrollTo({top:0,behavior:'smooth'});}
+navs.forEach(n=>n.addEventListener('click',()=>showView(n.dataset.view)));
+function sendMessage(){const input=document.getElementById('chatInput'),v=input.value.trim();if(!v)return;const box=document.getElementById('messages');const u=document.createElement('div');u.className='msg user';u.textContent='You: '+v;box.appendChild(u);const a=document.createElement('div');a.className='msg ai';a.textContent='Request received. The live AI service has not been connected yet, so I cannot generate an intelligent answer in this starter version. Your next build stage is to connect MY AI through a secure backend.';box.appendChild(a);input.value='';box.scrollTop=box.scrollHeight;}
+function getProjects(){try{return JSON.parse(localStorage.getItem('davidAlyiProjects')||'[]')}catch(e){return []}}
+function saveProject(type,content){if(!content||!content.trim()){alert('Please enter some project details first.');return}const p=getProjects();p.unshift({type,content:content.trim(),date:new Date().toLocaleString()});localStorage.setItem('davidAlyiProjects',JSON.stringify(p));renderProjects();alert('Project note saved on this device.');}
+function renderProjects(){const box=document.getElementById('projectList'),p=getProjects();box.innerHTML='';if(!p.length){box.textContent='No saved projects yet.';return}p.forEach((item,i)=>{const d=document.createElement('div');d.className='project';const left=document.createElement('div');const title=document.createElement('strong');title.textContent=item.type;const desc=document.createElement('div');desc.className='muted';desc.textContent=item.date+' · '+item.content.slice(0,100);left.append(title,desc);const del=document.createElement('button');del.className='btn';del.textContent='Delete';del.onclick=()=>{const all=getProjects();all.splice(i,1);localStorage.setItem('davidAlyiProjects',JSON.stringify(all));renderProjects()};d.append(left,del);box.append(d)});}
+function clearProjects(){if(confirm('Delete all saved project notes from this browser?')){localStorage.removeItem('davidAlyiProjects');renderProjects()}}
+document.getElementById('imageFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const img=document.getElementById('imagePreview');img.src=URL.createObjectURL(f);img.style.display='block'});
+document.getElementById('audioFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const a=document.getElementById('audioPreview');a.src=URL.createObjectURL(f);a.style.display='block'});
+document.getElementById('mediaFiles').addEventListener('change',e=>{const box=document.getElementById('mediaList');box.innerHTML='';[...e.target.files].forEach(f=>{const p=document.createElement('p');p.textContent='• '+f.name+' ('+Math.round(f.size/1024)+' KB)';box.append(p)});if(!e.target.files.length)box.textContent='No files selected.'});
+renderProjects();
+document.getElementById('clock').textContent=new Date().toLocaleDateString();
+</script>
+</body></html>
