@@ -447,24 +447,20 @@
       renderApp();
 
       let reply = '';
-      if (publicState.apiKey) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${publicState.apiKey}`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text }] }] })
-          });
-          const data = await res.json();
-          reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Empty cloud response';
-        } catch (err) {
-          reply = `Cloud API Error: ${err.message}`;
-        }
-      } else {
-        reply = `DAVID AI BRAIN (Local Simulation): I received your message: "${text}". To enable real live cloud generation, please configure your Gemini API key in the top navigation bar.`;
-      }
+      try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: text, provider: 'auto', userApiKey: publicState.apiKey || '' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+      reply = `[${data.usedProvider}] ${data.reply}`;
+    } catch (err) {
+      reply = `Cloud API Error: ${err.message}`;
+    }
 
-      publicState.chatMessages.push({ id: 'm-' + Date.now(), role: 'assistant', author: 'ASK DAVID AI', text: reply, time: 'Now' });
+    publicState.chatMessages.push({ id: 'm-' + Date.now(), role: 'assistant', author: 'ASK DAVID AI', text: reply, time: 'Now' });
       savePublicState();
       renderApp();
     }
