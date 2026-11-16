@@ -32,8 +32,13 @@ export default async function handler(req, res) {
   }
 
   const queue = [];
-  if (process.env.GROQ_API_KEY) queue.push(() => callGroq(process.env.GROQ_API_KEY));
-  if (process.env.GEMINI_API_KEY) queue.push(() => callGemini(process.env.GEMINI_API_KEY));
+  // Using your custom Vercel environment variable names:
+  // davidalyiai = Groq, davidalyi = Gemini
+  const groqKey = userApiKey || process.env.davidalyiai;
+  const geminiKey = userApiKey || process.env.davidalyi;
+
+  if (groqKey) queue.push(() => callGroq(groqKey));
+  if (geminiKey) queue.push(() => callGemini(geminiKey));
 
   if (queue.length === 0) {
     return res.status(500).json({ error: 'No AI keys configured in Vercel.' });
