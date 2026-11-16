@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   }
 
   async function callGemini(k) {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${k}`, {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${k}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
 
   const gKey = process.env.davidalyiai || userApiKey;
   const mKey = process.env.davidalyi || userApiKey;
-  let lastErr = "No keys configured";
+  let lastErr = "No keys available";
 
   if (gKey) {
     try {
