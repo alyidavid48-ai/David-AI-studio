@@ -60,7 +60,7 @@
     function getDefaultPublicState() {
       return {
         user: null, // null = public visitor; { id, displayName, email, role, avatar } when signed in
-        apiKey: localStorage.getItem('david_user_custom_gemini_key') || '',
+        apiKey: localStorage.getItem('david_alyi_studio_key_v2') || '',
         activeTab: 'landing', // landing | community | market | gallery | studio | docs
         communitySubTab: 'workspace', // workspace | chat | director | vision
         pwaInstallPromptDismissed: false,
@@ -90,7 +90,7 @@
           { id: 'mp-3', title: 'Non-Destructive Pro Color Grade Studio', author: '@media_pro', category: 'Image', uses: 2150, prompt: 'Apply non-destructive color grade to uploaded raw frame: +15% contrast curve, electric cyan rim lighting, preserving original file in private bucket.' }
         ],
         chatMessages: [
-          { id: 'm-1', role: 'assistant', author: 'ASK DAVID AI', text: 'Welcome to the **DAVID AI STUDIO** public community workspace! Plug in your custom Gemini API key in the top bar to enable real cloud generation, or explore our public prompt market and community creations.', time: '12:00 PM' }
+          { id: 'm-1', role: 'assistant', author: 'ASK DAVID AI', text: 'Welcome to the **DAVID AI STUDIO** public community workspace! Ask anything, generate scripts, or explore our creative studio tools.', time: '12:00 PM' }
         ],
         visionOutput: null
       };
@@ -308,7 +308,7 @@
             <div class="space-y-8 pt-12">
               <div class="space-y-2">
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Simple SaaS Pricing Tiers</h2>
-                <p class="text-xs sm:text-sm text-slate-400">Choose your production capacity or plug in your own API key for unlimited use.</p>
+                <p class="text-xs sm:text-sm text-slate-400">Choose your production capacity inside DAVID Alyi studio.</p>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
@@ -336,7 +336,7 @@
                     <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Studio BYOK</span>
                     <h3 class="text-2xl font-black text-white mt-2">$9 <span class="text-xs font-normal text-slate-400">/ month</span></h3>
                   </div>
-                  <p class="text-xs text-slate-400">Use your own Gemini API key for unlimited cloud generation with zero platform markups.</p>
+                  <p class="text-xs text-slate-400">Powered by David AI high-speed cloud architecture.</p>
                   <button onclick="openApiKeyModal()" class="w-full py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-extrabold text-xs">Configure Key</button>
                 </div>
               </div>
@@ -377,7 +377,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div class="rounded-3xl bg-[#111520] border border-slate-800 p-6 space-y-4">
                 <h3 class="font-bold text-base text-white">1. ASK DAVID AI</h3>
-                <p class="text-xs text-slate-400">General assistant for learning, writing, research, and coding. Connected directly to your cloud API key.</p>
+                <p class="text-xs text-slate-400">General assistant for learning, writing, research, and coding.</p>
                 <button onclick="setCommunitySubTab('chat')" class="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs">Open Chat →</button>
               </div>
               <div class="rounded-3xl bg-[#111520] border border-slate-800 p-6 space-y-4">
@@ -412,7 +412,7 @@
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
               <h2 class="font-bold text-base text-white">ASK DAVID AI — Public Cloud Chat</h2>
-              <p class="text-xs text-slate-400">${publicState.apiKey ? 'Connected to live Gemini Cloud API key.' : 'Using local fallback responses (Configure API Key in top bar for live cloud generation).'}</p>
+              <p class="text-xs text-slate-400">${publicState.apiKey ? 'Connected to David AI Cloud Engine.' : 'David AI Cloud Engine Ready.'}</p>
             </div>
             <button onclick="publicState.chatMessages = [publicState.chatMessages[0]]; savePublicState(); renderApp();" class="text-xs text-slate-400 hover:text-rose-300">Clear</button>
           </div>
@@ -457,7 +457,7 @@
       if (!res.ok) throw new Error(data.error || 'Server error');
       reply = `[${data.usedProvider}] ${data.reply}`;
     } catch (err) {
-      reply = `Cloud API Error: ${err.message}`;
+      reply = `${err.message}`;
     }
 
     publicState.chatMessages.push({ id: 'm-' + Date.now(), role: 'assistant', author: 'ASK DAVID AI', text: reply, time: 'Now' });
@@ -598,12 +598,12 @@
           <div class="w-full max-w-md rounded-3xl bg-[#111520] border border-cyan-500/40 p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between">
               <h3 class="font-bold text-base text-white flex items-center gap-2">
-                <i data-lucide="key" class="w-4 h-4 text-cyan-400"></i> Configure Gemini API Key
+                <i data-lucide="key" class="w-4 h-4 text-cyan-400"></i> Configure Studio Access Key
               </h3>
               <button onclick="document.getElementById('modal-root').innerHTML=''" class="text-slate-400 hover:text-white">✕</button>
             </div>
             <p class="text-xs text-slate-300 leading-relaxed">
-              Plug in your custom Gemini API key to unlock real-time cloud AI responses in chat and image generation. Your key is securely stored in your browser memory and never sent to third-party servers.
+              Optionally enter a custom access key for dedicated priority throughput.
             </p>
             <div class="space-y-3 text-xs">
               <input id="modal-api-input" type="password" value="${escapeHtml(publicState.apiKey)}" placeholder="AIzaSy..." class="w-full rounded-xl bg-[#090b10] border border-slate-700 px-3.5 py-3 font-mono text-white" />
@@ -621,11 +621,11 @@
     function saveApiKeyFromModal() {
       const val = document.getElementById('modal-api-input')?.value.trim() || '';
       publicState.apiKey = val;
-      localStorage.setItem('david_user_custom_gemini_key', val);
+      localStorage.setItem('david_alyi_studio_key_v2', val);
       document.getElementById('modal-root').innerHTML = '';
       savePublicState();
       renderApp();
-      showToast('API Key Saved', val ? 'Cloud API key successfully configured.' : 'API key cleared.', 'success');
+      showToast('API Key Saved', val ? 'Studio access key configured.' : 'API key cleared.', 'success');
     }
 
     function openAuthModal() {
