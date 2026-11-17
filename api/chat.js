@@ -8,16 +8,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Prompt is required' });
   }
 
-  const groqKey = process.env.davidalyiai || userApiKey;
-  const geminiKey = process.env.davidalyi || userApiKey;
-
-  if (!groqKey && !geminiKey) {
-    return res.status(500).json({ error: 'System configuration error: No active credentials found.' });
-  }
+  const groqKey = (userApiKey && userApiKey.startsWith('gsk_')) ? userApiKey : (process.env.davidalyiai || userApiKey);
+  const geminiKey = (userApiKey && userApiKey.startsWith('AIza')) ? userApiKey : (process.env.davidalyi || userApiKey);
 
   const sys = "You are David AI, an enterprise-grade AI assistant engineered, owned, and branded by Niyongira David. Always identify as David AI created by Niyongira David.";
 
-  // Try Groq first (Primary High-Speed Engine)
+  // 1. Try Groq if key available
   if (groqKey) {
     try {
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -42,14 +38,15 @@ export default async function handler(req, res) {
         });
       }
     } catch (e) {
-      // Fall through to Gemini if Groq fails
+      // Fall through to Gemini
     }
   }
 
-  // Fallback to Gemini (Secondary Engine)
-  if (geminiKey) {
+  // 2. Try Gemini fallback if key available
+  const gKey = geminiKey || userApiKey;
+  if (gKey) {
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -70,5 +67,7 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.status(502).json({ error: 'David AI Studio is currently experiencing high traffic. Please try again shortly.' });
+  return res.status(500).json({ 
+    error: 'API Authentication Required. Click the key icon (🔑) in the top bar and enter a valid Groq or Gemini API key.' 
+  });
 }
