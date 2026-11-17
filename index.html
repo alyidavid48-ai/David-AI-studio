@@ -26,11 +26,11 @@
             <h1 class="font-bold text-base text-white tracking-wide">DAVID Alyi studio</h1>
         </div>
         <div class="flex items-center gap-2">
-            <select id="model-select" class="bg-obsidian-950 border border-obsidian-800 text-xs rounded-lg px-2 py-1.5 text-gray-200 focus:outline-none focus:border-emerald-500">
+            <select id="model-select" class="bg-obsidian-950 border border-obsidian-800 text-xs rounded-lg px-2.5 py-1.5 text-gray-200 focus:outline-none focus:border-emerald-500">
                 <option value="groq">Groq (davidalyiai)</option>
                 <option value="gemini">Gemini (davidalyi)</option>
             </select>
-            <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-1 rounded-lg">Production Active</span>
+            <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-1 rounded-lg">Production Live</span>
         </div>
     </header>
 
@@ -53,7 +53,7 @@
                     <div class="flex items-start gap-3">
                         <div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] shadow-sm">
                             <p class="text-sm font-medium text-emerald-400 mb-1">Welcome back, N. David</p>
-                            <p class="text-gray-200 text-xs leading-relaxed">DAVID Alyi studio is online, linked securely via Vercel serverless environment keys (`davidalyi` & `davidalyiai`). Choose a tool from the sidebar or type a prompt below.</p>
+                            <p class="text-gray-200 text-xs leading-relaxed">DAVID Alyi studio is online and fully reset. Ready for your creative prompts and backend key routing.</p>
                         </div>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
             <div id="tab-image" class="hidden flex-1 p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-4">
                 <h2 class="text-lg font-bold text-white">Image Generator Workspace</h2>
                 <p class="text-xs text-gray-400">Generate high-fidelity visual assets, portraits, and concept artwork.</p>
-                <textarea placeholder="Describe the image you want to generate..." class="w-full bg-obsidian-900 border border-obsidian-800 rounded-xl p-3 text-xs text-gray-200 h-24 focus:outline-none focus:border-emerald-500"></textarea>
+                <textarea placeholder="Describe your visual concept..." class="w-full bg-obsidian-900 border border-obsidian-800 rounded-xl p-3 text-xs text-gray-200 h-24 focus:outline-none focus:border-emerald-500"></textarea>
                 <button class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold">Generate Artwork</button>
             </div>
 
@@ -87,7 +87,7 @@
             <div id="tab-script" class="hidden flex-1 p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-4">
                 <h2 class="text-lg font-bold text-white">Script Writer</h2>
                 <p class="text-xs text-gray-400">Draft lyrics, video concepts, and dialogue in English and Kinyarwanda.</p>
-                <textarea placeholder="Enter your song lyrics or video script prompt..." class="w-full bg-obsidian-900 border border-obsidian-800 rounded-xl p-3 text-xs text-gray-200 h-36 focus:outline-none focus:border-emerald-500"></textarea>
+                <textarea placeholder="Enter song lyrics or script prompt..." class="w-full bg-obsidian-900 border border-obsidian-800 rounded-xl p-3 text-xs text-gray-200 h-36 focus:outline-none focus:border-emerald-500"></textarea>
                 <button class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold">Optimize Script</button>
             </div>
 
@@ -142,7 +142,7 @@
                 if (data.error) throw new Error(data.error);
                 replyBox.innerText = data.text;
             } catch (err) {
-                replyBox.innerHTML = `<span class="text-amber-400">Error: ${err.message}. Check your Vercel keys (` + (model === 'groq' ? 'davidalyiai' : 'davidalyi') + `).</span>`;
+                replyBox.innerHTML = `<span class="text-amber-400">Error: ${err.message}. Please verify your Vercel keys (` + (model === 'groq' ? 'davidalyiai' : 'davidalyi') + `).</span>`;
             }
             container.scrollTop = container.scrollHeight;
         });

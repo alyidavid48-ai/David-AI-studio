@@ -9,7 +9,7 @@ export default async function handler(req, res) {
         if (model === 'groq') {
             const apiKey = process.env.davidalyiai;
             if (!apiKey) {
-                return res.status(400).json({ error: 'davidalyiai is not configured in Vercel environment variables.' });
+                return res.status(400).json({ error: 'Environment variable davidalyiai is missing in Vercel.' });
             }
 
             const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         } else {
             const apiKey = process.env.davidalyi;
             if (!apiKey) {
-                return res.status(400).json({ error: 'davidalyi is not configured in Vercel environment variables.' });
+                return res.status(400).json({ error: 'Environment variable davidalyi is missing in Vercel.' });
             }
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
