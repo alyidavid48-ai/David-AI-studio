@@ -28,7 +28,6 @@
                 <option value="groq">Groq (davidalyiai)</option>
                 <option value="gemini">Gemini (davidalyi)</option>
             </select>
-            <button id="settings-btn" class="text-xs bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800 px-3 py-1.5 rounded-lg text-gray-300 transition">Settings</button>
         </div>
     </header>
 
@@ -36,7 +35,7 @@
         <div class="flex items-start gap-3">
             <div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] shadow-sm">
                 <p class="text-sm font-medium text-emerald-400 mb-1">Studio Online</p>
-                <p class="text-gray-200">Welcome back, N. David. DAVID Alyi studio is connected and ready.</p>
+                <p class="text-gray-200">Welcome back, N. David. DAVID Alyi studio is securely connected to your Vercel environment variables.</p>
             </div>
         </div>
     </main>
@@ -48,49 +47,7 @@
         </form>
     </footer>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden p-4 z-50">
-        <div class="bg-obsidian-900 border border-obsidian-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <h2 class="text-lg font-bold text-white">Studio Configuration</h2>
-            <p class="text-xs text-gray-400">Default API keys are pre-loaded. You can update or override them below anytime:</p>
-            <div>
-                <label class="block text-xs text-gray-400 mb-1">Groq API Key (`davidalyiai`)</label>
-                <input id="groq-key" type="password" placeholder="gsk_..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
-            </div>
-            <div>
-                <label class="block text-xs text-gray-400 mb-1">Gemini API Key (`davidalyi`)</label>
-                <input id="gemini-key" type="password" placeholder="AIza..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button id="close-settings" class="bg-obsidian-850 hover:bg-obsidian-800 text-gray-300 px-4 py-2 rounded-xl text-sm transition">Cancel</button>
-                <button id="save-settings" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">Save Keys</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const settingsBtn = document.getElementById('settings-btn');
-        const settingsModal = document.getElementById('settings-modal');
-        const closeSettings = document.getElementById('close-settings');
-        const saveSettings = document.getElementById('save-settings');
-
-        settingsBtn.onclick = () => settingsModal.classList.remove('hidden');
-        closeSettings.onclick = () => settingsModal.classList.add('hidden');
-        
-        saveSettings.onclick = () => {
-            localStorage.setItem('groq_key', document.getElementById('groq-key').value);
-            localStorage.setItem('gemini_key', document.getElementById('gemini-key').value);
-            settingsModal.classList.add('hidden');
-            alert('API keys saved successfully.');
-        };
-
-        // Pre-fill with user's saved keys or default placeholders if empty
-        if(!localStorage.getItem('groq_key')) localStorage.setItem('groq_key', 'gsk_default_placeholder_replace_in_settings');
-        if(!localStorage.getItem('gemini_key')) localStorage.setItem('gemini_key', 'AIza_default_placeholder_replace_in_settings');
-
-        document.getElementById('groq-key').value = localStorage.getItem('groq_key');
-        document.getElementById('gemini-key').value = localStorage.getItem('gemini_key');
-
         const form = document.getElementById('chat-form');
         const input = document.getElementById('user-input');
         const container = document.getElementById('chat-container');
@@ -106,43 +63,28 @@
 
             const model = document.getElementById('model-select').value;
             const replyId = 'reply-' + Date.now();
-            container.innerHTML += `<div class="flex items-start gap-3"><div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] text-sm text-gray-200" id="${replyId}"><span class="animate-pulse">Thinking...</span></div></div>`;
+            container.innerHTML += `<div class="flex items-start gap-3"><div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] text-sm text-gray-200" id="${replyId}"><span class="animate-pulse">Thinking via Vercel backend...</span></div></div>`;
             container.scrollTop = container.scrollHeight;
 
             const replyBox = document.getElementById(replyId);
 
             try {
-                let text = '';
-                if (model === 'groq') {
-                    const apiKey = localStorage.getItem('groq_key');
-                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: 'llama-3.1-8b-instant',
-                            messages: [{ role: 'user', content: prompt }]
-                        })
-                    });
-                    const data = await response.json();
-                    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-                    text = data.choices?.[0]?.message?.content || 'No response';
-                } else {
-                    const apiKey = localStorage.getItem('gemini_key');
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-                    const data = await response.json();
-                    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-                    text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model, prompt })
+                });
+                
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Serverless function error or timeout. Check Vercel function logs.");
                 }
-                replyBox.innerText = text;
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                replyBox.innerText = data.text;
             } catch (err) {
-                replyBox.innerHTML = `<span class="text-amber-400">Error: ${err.message}. Please tap Settings at the top right to check your API key.</span>`;
+                replyBox.innerHTML = `<span class="text-amber-400">Error: ${err.message}</span>`;
             }
             container.scrollTop = container.scrollHeight;
         });
