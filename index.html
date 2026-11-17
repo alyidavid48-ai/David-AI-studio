@@ -455,7 +455,7 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Server error');
-      reply = `[${data.usedProvider}] ${data.reply}`;
+      reply = data.reply;
     } catch (err) {
       reply = `${err.message}`;
     }

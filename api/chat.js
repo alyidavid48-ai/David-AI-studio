@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'API Key missing. Please click the key icon (🔑) and enter your key.' });
   }
 
-  const sys = "You are David AI, an enterprise-grade AI assistant engineered, owned, and branded by Niyongira David. Always identify as David AI created by Niyongira David.";
+  const sys = "You are David AI, a helpful, concise, and intelligent AI assistant. Format responses cleanly line-by-line with proper spacing like ChatGPT or Gemini. NEVER introduce yourself, state your name, or mention your creator Niyongira David unless the user explicitly asks who you are or who made you.";
 
   // 1. Dynamic Groq Auto-Discovery with Multi-Model Fallback
   if (activeKey.startsWith('gsk_')) {
