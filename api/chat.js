@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   const sys = "You are David AI, an enterprise-grade AI assistant engineered, owned, and branded by Niyongira David. Always identify as David AI created by Niyongira David.";
 
-  // 1. Dynamic Groq Auto-Discovery (keys starting with gsk_)
+  // 1. Dynamic Groq Auto-Discovery with Multi-Model Fallback
   if (activeKey.startsWith('gsk_')) {
     try {
       const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
@@ -26,44 +26,54 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: `Groq Auth Error: ${modelsData.error?.message || 'Invalid Key'}` });
       }
 
-      // Automatically pick an active text chat model (exclude whisper/guard/vision-only models)
-      const validModels = (modelsData.data || [])
+      // Filter out audio, TTS, and guard models
+      const blocked = ['whisper', 'guard', 'tts', 'orpheus', 'playai', 'distil-whisper'];
+      const allTextModels = (modelsData.data || [])
         .map(m => m.id)
-        .filter(id => !id.includes('whisper') && !id.includes('guard') && !id.includes('tts'));
-      
-      const chosenModel = validModels.find(id => id.includes('llama')) || validModels[0];
-      if (!chosenModel) {
-        return res.status(500).json({ error: 'No active chat models available on this Groq account.' });
+        .filter(id => !blocked.some(b => id.toLowerCase().includes(b)));
+
+      // Prioritize standard chat families first, then try any remaining text models
+      const preferred = allTextModels.filter(id => /llama|qwen|gemma|mixtral|deepseek|gpt/i.test(id));
+      const others = allTextModels.filter(id => !preferred.includes(id));
+      const candidates = [...preferred, ...others];
+
+      if (candidates.length === 0) {
+        return res.status(500).json({ error: 'No text chat models are enabled on this Groq API key. Enable a model in console.groq.com/settings/limits.' });
       }
 
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${activeKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: chosenModel,
-          messages: [
-            { role: 'system', content: sys },
-            { role: 'user', content: prompt }
-          ]
-        })
-      });
-      const data = await response.json();
-      if (response.ok && data.choices?.[0]?.message?.content) {
-        return res.status(200).json({
-          reply: data.choices[0].message.content,
-          usedProvider: 'David AI'
+      let lastError = '';
+      for (const modelId of candidates) {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${activeKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: modelId,
+            messages: [
+              { role: 'system', content: sys },
+              { role: 'user', content: prompt }
+            ]
+          })
         });
+        const data = await response.json();
+        if (response.ok && data.choices?.[0]?.message?.content) {
+          return res.status(200).json({
+            reply: data.choices[0].message.content,
+            usedProvider: 'David AI'
+          });
+        }
+        lastError = data.error?.message || JSON.stringify(data);
       }
-      return res.status(500).json({ error: `Groq Error: ${data.error?.message || JSON.stringify(data)}` });
+
+      return res.status(500).json({ error: `Groq Error across available models: ${lastError}` });
     } catch (e) {
       return res.status(500).json({ error: `Groq Network Error: ${e.message}` });
     }
   }
 
-  // 2. Dynamic Gemini Auto-Discovery (keys starting with AIza)
+  // 2. Dynamic Gemini Auto-Discovery with Multi-Model Fallback
   if (activeKey.startsWith('AIza')) {
     try {
       const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${activeKey}`);
@@ -72,39 +82,39 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: `Gemini Auth Error: ${modelsData.error?.message || 'Invalid Key'}` });
       }
 
-      // Automatically pick the best available generateContent model
       const validModels = (modelsData.models || [])
         .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
         .map(m => m.name.replace('models/', ''));
 
-      const chosenModel = validModels.find(id => id.includes('flash')) || validModels[0];
-      if (!chosenModel) {
-        return res.status(500).json({ error: 'No active generateContent models available on this Gemini key.' });
+      const preferred = validModels.filter(id => id.includes('flash') || id.includes('pro'));
+      const candidates = [...preferred, ...validModels.filter(id => !preferred.includes(id))];
+
+      let lastError = '';
+      for (const modelId of candidates) {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${activeKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: `${sys}\n\n${prompt}` }] }]
+          })
+        });
+        const data = await response.json();
+        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          return res.status(200).json({
+            reply: data.candidates[0].content.parts[0].text,
+            usedProvider: 'David AI'
+          });
+        }
+        lastError = data.error?.message || JSON.stringify(data);
       }
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${chosenModel}:generateContent?key=${activeKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            { role: 'user', parts: [{ text: `${sys}\n\n${prompt}` }] }
-          ]
-        })
-      });
-      const data = await response.json();
-      if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-        return res.status(200).json({
-          reply: data.candidates[0].content.parts[0].text,
-          usedProvider: 'David AI'
-        });
-      }
-      return res.status(500).json({ error: `Gemini Error: ${data.error?.message || JSON.stringify(data)}` });
+      return res.status(500).json({ error: `Gemini Error: ${lastError}` });
     } catch (e) {
       return res.status(500).json({ error: `Gemini Network Error: ${e.message}` });
     }
   }
 
-  return res.status(400).json({ 
-    error: 'Unrecognized API key format. Please enter a valid Groq (gsk_...) or Gemini (AIza...) key.' 
+  return res.status(400).json({
+    error: 'Unrecognized API key format. Please enter a valid Groq (gsk_...) or Gemini (AIza...) key.'
   });
 }
