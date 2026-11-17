@@ -52,18 +52,18 @@
     <div id="settings-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden p-4 z-50">
         <div class="bg-obsidian-900 border border-obsidian-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <h2 class="text-lg font-bold text-white">Studio Configuration</h2>
-            <p class="text-xs text-gray-400">Keys load automatically from Vercel environment variables (`davidalyi` and `davidalyiai`), or you can add local overrides below:</p>
+            <p class="text-xs text-gray-400">Configure your API keys directly here for instant client-side generation without Vercel serverless timeouts:</p>
             <div>
-                <label class="block text-xs text-gray-400 mb-1">Groq Key Override (davidalyiai)</label>
+                <label class="block text-xs text-gray-400 mb-1">Groq API Key (`davidalyiai` / gsk_...)</label>
                 <input id="groq-key" type="password" placeholder="gsk_..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
             </div>
             <div>
-                <label class="block text-xs text-gray-400 mb-1">Gemini Key Override (davidalyi)</label>
+                <label class="block text-xs text-gray-400 mb-1">Gemini API Key (`davidalyi` / AIza...)</label>
                 <input id="gemini-key" type="password" placeholder="AIza..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button id="close-settings" class="bg-obsidian-850 hover:bg-obsidian-800 text-gray-300 px-4 py-2 rounded-xl text-sm transition">Cancel</button>
-                <button id="save-settings" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">Save Override</button>
+                <button id="save-settings" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">Save Keys</button>
             </div>
         </div>
     </div>
@@ -81,7 +81,7 @@
             localStorage.setItem('groq_key', document.getElementById('groq-key').value);
             localStorage.setItem('gemini_key', document.getElementById('gemini-key').value);
             settingsModal.classList.add('hidden');
-            alert('API key override saved locally.');
+            alert('API keys saved successfully.');
         };
 
         if(localStorage.getItem('groq_key')) document.getElementById('groq-key').value = localStorage.getItem('groq_key');
@@ -108,19 +108,39 @@
             const replyBox = document.getElementById(replyId);
 
             try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        model, 
-                        prompt,
-                        localGroqKey: localStorage.getItem('groq_key') || '',
-                        localGeminiKey: localStorage.getItem('gemini_key') || ''
-                    })
-                });
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-                replyBox.innerText = data.text;
+                let text = '';
+                if (model === 'groq') {
+                    const apiKey = localStorage.getItem('groq_key');
+                    if (!apiKey) throw new Error('Groq API key missing. Click "Settings" at the top right and enter your Groq key.');
+
+                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: 'llama-3.1-8b-instant',
+                            messages: [{ role: 'user', content: prompt }]
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+                    text = data.choices?.[0]?.message?.content || 'No response';
+                } else {
+                    const apiKey = localStorage.getItem('gemini_key');
+                    if (!apiKey) throw new Error('Gemini API key missing. Click "Settings" at the top right and enter your Gemini key.');
+
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+                    text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+                }
+                replyBox.innerText = text;
             } catch (err) {
                 replyBox.innerHTML = `<span class="text-amber-400">Error: ${err.message}</span>`;
             }
