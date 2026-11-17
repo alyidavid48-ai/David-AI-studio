@@ -620,7 +620,7 @@
 
     function saveApiKeyFromModal() {
       const val = document.getElementById('modal-api-input')?.value.trim() || '';
-      publicState.apiKey = val;
+      localStorage.setItem("david_ai_key", val); publicState.apiKey = val;
       localStorage.setItem('david_alyi_studio_key_v2', val);
       document.getElementById('modal-root').innerHTML = '';
       savePublicState();
