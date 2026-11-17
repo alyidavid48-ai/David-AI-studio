@@ -3,13 +3,13 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { model, prompt } = req.body;
+    const { model, prompt, localGroqKey, localGeminiKey } = req.body;
 
     try {
         if (model === 'groq') {
-            const apiKey = process.env.davidalyiai;
+            const apiKey = localGroqKey || process.env.davidalyiai;
             if (!apiKey) {
-                return res.status(400).json({ error: 'Environment variable davidalyiai is missing in Vercel.' });
+                return res.status(400).json({ error: 'Groq API key missing. Set davidalyiai in Vercel or via Settings.' });
             }
 
             const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -29,9 +29,9 @@ export default async function handler(req, res) {
             return res.status(200).json({ text });
 
         } else {
-            const apiKey = process.env.davidalyi;
+            const apiKey = localGeminiKey || process.env.davidalyi;
             if (!apiKey) {
-                return res.status(400).json({ error: 'Environment variable davidalyi is missing in Vercel.' });
+                return res.status(400).json({ error: 'Gemini API key missing. Set davidalyi in Vercel or via Settings.' });
             }
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
