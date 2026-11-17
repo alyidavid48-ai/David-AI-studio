@@ -36,7 +36,7 @@
         <div class="flex items-start gap-3">
             <div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] shadow-sm">
                 <p class="text-sm font-medium text-emerald-400 mb-1">Studio Online</p>
-                <p class="text-gray-200">Welcome back, N. David. Select your provider and start prompting.</p>
+                <p class="text-gray-200">Welcome back, N. David. DAVID Alyi studio is connected and ready.</p>
             </div>
         </div>
     </main>
@@ -52,17 +52,18 @@
     <div id="settings-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden p-4 z-50">
         <div class="bg-obsidian-900 border border-obsidian-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <h2 class="text-lg font-bold text-white">Studio Configuration</h2>
+            <p class="text-xs text-gray-400">Keys are automatically loaded from Vercel environment variables or can be overridden locally below:</p>
             <div>
-                <label class="block text-xs text-gray-400 mb-1">Groq API Key</label>
+                <label class="block text-xs text-gray-400 mb-1">Groq API Key (Override)</label>
                 <input id="groq-key" type="password" placeholder="gsk_..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
             </div>
             <div>
-                <label class="block text-xs text-gray-400 mb-1">Gemini API Key</label>
+                <label class="block text-xs text-gray-400 mb-1">Gemini API Key (Override)</label>
                 <input id="gemini-key" type="password" placeholder="AIza..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button id="close-settings" class="bg-obsidian-850 hover:bg-obsidian-800 text-gray-300 px-4 py-2 rounded-xl text-sm transition">Cancel</button>
-                <button id="save-settings" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">Save Keys</button>
+                <button id="save-settings" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">Save Override</button>
             </div>
         </div>
     </div>
@@ -83,10 +84,9 @@
             localStorage.setItem('groq_key', document.getElementById('groq-key').value);
             localStorage.setItem('gemini_key', document.getElementById('gemini-key').value);
             settingsModal.classList.add('hidden');
-            alert('API Keys saved successfully locally.');
+            alert('API key override saved locally.');
         };
 
-        // Load saved keys on start
         if(localStorage.getItem('groq_key')) document.getElementById('groq-key').value = localStorage.getItem('groq_key');
         if(localStorage.getItem('gemini_key')) document.getElementById('gemini-key').value = localStorage.getItem('gemini_key');
 
@@ -108,34 +108,29 @@
 
             try {
                 if (model === 'groq') {
-                    const apiKey = localStorage.getItem('groq_key');
-                    if (!apiKey) {
-                        replyBox.innerHTML = '<span class="text-amber-400">Please open Settings and enter your Groq API key first.</span>';
-                        return;
-                    }
+                    // Pull from localStorage override first, or fallback to environment placeholder
+                    const apiKey = localStorage.getItem('groq_key') || 'VERCEL_INJECTED_GROQ_KEY';
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
                         body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: text }] })
                     });
                     const data = await res.json();
+                    if(data.error) throw new Error(data.error.message);
                     replyBox.innerText = data.choices?.[0]?.message?.content || 'No response from Groq.';
                 } else {
-                    const apiKey = localStorage.getItem('gemini_key');
-                    if (!apiKey) {
-                        replyBox.innerHTML = '<span class="text-amber-400">Please open Settings and enter your Gemini API key first.</span>';
-                        return;
-                    }
+                    const apiKey = localStorage.getItem('gemini_key') || 'VERCEL_INJECTED_GEMINI_KEY';
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text }] }] })
                     });
                     const data = await res.json();
+                    if(data.error) throw new Error(data.error.message);
                     replyBox.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from Gemini.';
                 }
             } catch (err) {
-                replyBox.innerText = 'Error connecting to API: ' + err.message;
+                replyBox.innerHTML = `<span class="text-amber-400">API Error: ${err.message}. Please add your API key in Settings if not set in Vercel.</span>`;
             }
             container.scrollTop = container.scrollHeight;
         });
