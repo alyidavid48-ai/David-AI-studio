@@ -8,11 +8,15 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Prompt is required' });
   }
 
-  const activeKey = userApiKey || process.env.davidalyiai || process.env.davidalyi || '';
+  const activeKey = (userApiKey || process.env.davidalyiai || process.env.davidalyi || '').trim();
+  if (!activeKey) {
+    return res.status(400).json({ error: 'API Key missing. Please click the key icon (🔑) and enter your key.' });
+  }
+
   const sys = "You are David AI, an enterprise-grade AI assistant engineered, owned, and branded by Niyongira David. Always identify as David AI created by Niyongira David.";
 
-  // 1. Try Groq first (keys usually start with gsk_)
-  if (activeKey.startsWith('gsk_') || (!activeKey.startsWith('AIza') && activeKey.length > 20)) {
+  // 1. Try Groq if key starts with gsk_ or doesn't start with AIza
+  if (activeKey.startsWith('gsk_') || !activeKey.startsWith('AIza')) {
     try {
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -34,17 +38,18 @@ export default async function handler(req, res) {
           reply: data.choices[0].message.content,
           usedProvider: 'David AI'
         });
+      } else {
+        return res.status(500).json({ error: `Groq Error: ${data.error?.message || JSON.stringify(data)}` });
       }
     } catch (e) {
-      // Fall through
+      // Continue to Gemini if Groq network call fails
     }
   }
 
-  // 2. Try Gemini fallback (keys usually start with AIza)
-  const gKey = activeKey.startsWith('AIza') ? activeKey : (process.env.davidalyi || '');
-  if (gKey) {
+  // 2. Try Gemini if key starts with AIza
+  if (activeKey.startsWith('AIza') || activeKey.length > 30) {
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gKey}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -59,13 +64,15 @@ export default async function handler(req, res) {
           reply: data.candidates[0].content.parts[0].text,
           usedProvider: 'David AI'
         });
+      } else {
+        return res.status(500).json({ error: `Gemini Error: ${data.error?.message || JSON.stringify(data)}` });
       }
     } catch (e) {
-      // Fall through
+      return res.status(500).json({ error: `Network Exception: ${e.message}` });
     }
   }
 
   return res.status(500).json({ 
-    error: 'API Authentication Required. Click the key icon (🔑) in the top bar and enter a valid Groq (gsk_...) or Gemini (AIza...) API key.' 
+    error: 'Invalid API Key format. Ensure your Groq key starts with gsk_ or Gemini key starts with AIza.' 
   });
 }
