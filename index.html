@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAVID Alyi studio</title>
+    <title>DAVID AI STUDIO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,98 +11,102 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { 950: '#060a17', 900: '#0f172a', 850: '#1e293b', 800: '#334155', 600: '#2563eb', 500: '#3b82f6' }
+                        darkBg: '#030712',
+                        cardBg: '#0b0f19',
+                        accentBlue: '#06b6d4',
+                        accentPurple: '#8b5cf6'
                     }
                 }
             }
         }
     </script>
 </head>
-<body class="bg-brand-950 text-gray-100 h-screen flex flex-col font-sans">
-    <header class="bg-brand-900 border-b border-brand-800 p-4 flex justify-between items-center shadow-lg">
-        <h1 class="font-bold text-lg text-white flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-brand-500 inline-block animate-pulse"></span> DAVID Alyi studio
-        </h1>
+<body class="bg-darkBg text-gray-100 min-h-screen flex flex-col font-sans selection:bg-accentBlue selection:text-black">
+    
+    <!-- Top PWA Banner -->
+    <div class="bg-gradient-to-r from-accentBlue to-accentPurple text-black px-4 py-2 text-xs font-semibold flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-2 truncate">
+            <span>📱 DAVID AI STUDIO is installable as a PWA</span>
+        </div>
+        <button onclick="alert('PWA installation prompt triggered.')" class="bg-black text-white px-3 py-1 rounded-lg text-[11px] hover:bg-gray-900 transition shadow">Install PWA</button>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="border-b border-gray-800/60 bg-darkBg/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <select id="model-select" class="bg-brand-950 border border-brand-800 text-xs rounded-lg px-2.5 py-1.5 text-gray-200 focus:outline-none focus:border-brand-500">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-cyan-500/20">D2</div>
+            <div>
+                <h1 class="font-extrabold text-sm tracking-wide text-white">DAVID AI</h1>
+                <p class="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">STUDIO</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <select id="model-select" class="bg-cardBg border border-gray-800 text-xs rounded-xl px-3 py-2 text-gray-300 focus:outline-none focus:border-cyan-500">
                 <option value="groq">Groq (davidalyiai)</option>
                 <option value="gemini">Gemini (davidalyi)</option>
             </select>
-            <span class="text-xs bg-brand-600/20 text-brand-400 border border-brand-600/30 px-3 py-1.5 rounded-lg font-medium">Multi-Action Active</span>
+            <button onclick="toggleModal(true)" class="p-2.5 rounded-xl bg-cardBg border border-gray-800 text-cyan-400 hover:bg-gray-800 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4v-4l4.257-4.257A6 6 0 1119 9z"/></svg>
+            </button>
+            <button onclick="alert('Auth modal active.')" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 transition">Sign In / Sign Up</button>
         </div>
     </header>
 
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Sidebar Actions -->
-        <aside class="w-60 bg-brand-900 border-r border-brand-800 p-3 space-y-1.5 flex flex-col">
-            <p class="text-[10px] uppercase font-semibold text-gray-400 px-3 pb-1 tracking-wider">Studio Actions</p>
-            <button onclick="setAction('chat')" id="btn-chat" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium bg-brand-600 text-white transition flex items-center gap-2.5 shadow-sm">💬 AI Director Chat</button>
-            <button onclick="setAction('image')" id="btn-image" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-300 hover:bg-brand-850 hover:text-white transition flex items-center gap-2.5">🎨 Generate Image</button>
-            <button onclick="setAction('script')" id="btn-script" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-300 hover:bg-brand-850 hover:text-white transition flex items-center gap-2.5">📜 Draft Script / Lyrics</button>
-            <button onclick="setAction('code')" id="btn-code" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-300 hover:bg-brand-850 hover:text-white transition flex items-center gap-2.5">💻 Generate Code / Fix</button>
-        </aside>
+    <!-- Hero Section -->
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-12 text-center max-w-4xl mx-auto space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cardBg border border-cyan-500/30 text-cyan-400 text-xs font-medium shadow-inner">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            Public SaaS & PWA Template • Built on Technical Blueprint v2.0
+        </div>
 
-        <!-- Main Chat / Output Area -->
-        <main class="flex-1 flex flex-col bg-brand-950 overflow-hidden">
-            <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-3xl w-full mx-auto">
-                <div class="flex items-start gap-3">
-                    <div class="bg-brand-900 p-4 rounded-xl border border-brand-800 max-w-[85%] shadow-sm">
-                        <p class="text-xs font-semibold text-brand-400 mb-1">Studio Online</p>
-                        <p class="text-gray-200 text-xs">Welcome back, N. David. Select an action on the left or type your prompt below.</p>
-                    </div>
+        <h1 class="text-4xl md:text-6xl font-black tracking-tight text-white leading-tight">
+            The Multimodal <br/>
+            <span class="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">AI Creative & Development</span> <br/>
+            Workspace
+        </h1>
+
+        <p class="text-gray-400 text-sm md:text-base max-w-2xl">
+            Type, speak, upload pictures, plan productions with AI Director, build full-stack apps with autonomous agents, and plug in your cloud API key for real generation.
+        </p>
+
+        <!-- Interactive Playground Box -->
+        <div class="w-full bg-cardBg border border-gray-800/80 rounded-2xl p-4 shadow-2xl mt-4 text-left space-y-3">
+            <div id="chat-output" class="h-60 overflow-y-auto space-y-3 pr-2 font-mono text-xs text-gray-300">
+                <div class="p-3 rounded-xl bg-gray-900/60 border border-gray-800 text-cyan-400">
+                    System ready. Connected securely to Vercel environment variables (`davidalyi` & `davidalyiai`). Type a prompt below to begin.
                 </div>
             </div>
+            
+            <form id="chat-form" class="flex gap-2 pt-2 border-t border-gray-800/60">
+                <input id="user-input" type="text" placeholder="Message DAVID AI STUDIO workspace..." class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-xs text-gray-100 focus:outline-none focus:border-cyan-500">
+                <button type="submit" class="bg-cyan-500 hover:bg-cyan-400 text-black font-bold px-6 py-3 rounded-xl text-xs transition shadow-lg shadow-cyan-500/20">Send Prompt</button>
+            </form>
+        </div>
+    </main>
 
-            <footer class="bg-brand-900 border-t border-brand-800 p-4">
-                <form id="chat-form" class="max-w-3xl mx-auto flex gap-2">
-                    <input id="user-input" type="text" placeholder="Ask DAVID Alyi studio..." class="flex-1 bg-brand-950 border border-brand-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-brand-500 text-gray-100 shadow-inner">
-                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-3 rounded-xl text-xs font-semibold transition shadow-md">Execute</button>
-                </form>
-            </footer>
-        </main>
-    </div>
+    <!-- Footer -->
+    <footer class="border-t border-gray-800/60 bg-darkBg py-6 px-6 text-center text-xs text-gray-500">
+        DAVID AI STUDIO &copy; 2026 • Powered by Vercel Serverless Architecture
+    </footer>
 
     <script>
-        let currentAction = 'chat';
-
-        function setAction(action) {
-            currentAction = action;
-            ['chat', 'image', 'script', 'code'].forEach(a => {
-                const btn = document.getElementById('btn-' + a);
-                if (a === action) {
-                    btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium bg-brand-600 text-white transition flex items-center gap-2.5 shadow-sm";
-                } else {
-                    btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-300 hover:bg-brand-850 hover:text-white transition flex items-center gap-2.5";
-                }
-            });
-            const input = document.getElementById('user-input');
-            if(action === 'image') input.placeholder = "Describe the image or artwork concept...";
-            else if(action === 'script') input.placeholder = "Enter prompt for lyrics, poem or script...";
-            else if(action === 'code') input.placeholder = "Describe the code or bug to fix...";
-            else input.placeholder = "Ask DAVID Alyi studio...";
-        }
-
         const form = document.getElementById('chat-form');
         const input = document.getElementById('user-input');
-        const container = document.getElementById('chat-container');
+        const output = document.getElementById('chat-output');
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const text = input.value.trim();
-            if (!text) return;
+            const prompt = input.value.trim();
+            if (!prompt) return;
 
-            const prompt = `[Action: ${currentAction.toUpperCase()}] ${text}`;
-
-            container.innerHTML += `<div class="flex justify-end"><div class="bg-brand-600 text-white p-3 rounded-xl max-w-[85%] text-xs shadow-sm">${text}</div></div>`;
+            output.innerHTML += `<div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-800/50 text-cyan-200 text-right"><b>You:</b> ${prompt}</div>`;
             input.value = '';
-            container.scrollTop = container.scrollHeight;
+            output.scrollTop = output.scrollHeight;
 
             const model = document.getElementById('model-select').value;
-            const replyId = 'reply-' + Date.now();
-            container.innerHTML += `<div class="flex items-start gap-3"><div class="bg-brand-900 p-4 rounded-xl border border-brand-800 max-w-[85%] text-xs text-gray-200 shadow-sm" id="${replyId}"><span class="animate-pulse text-brand-400">Processing...</span></div></div>`;
-            container.scrollTop = container.scrollHeight;
-
-            const replyBox = document.getElementById(replyId);
+            const id = 'res-' + Date.now();
+            output.innerHTML += `<div id="${id}" class="p-3 rounded-xl bg-gray-900 border border-gray-800 text-gray-400 animate-pulse">Processing via ${model}...</div>`;
+            output.scrollTop = output.scrollHeight;
 
             try {
                 const res = await fetch('/api/chat', {
@@ -112,11 +116,12 @@
                 });
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
-                replyBox.innerText = data.text;
+                document.getElementById(id).innerHTML = `<b class="text-cyan-400">DAVID AI:</b> ${data.text}`;
+                document.getElementById(id).className = "p-3 rounded-xl bg-gray-900 border border-gray-800 text-gray-200";
             } catch (err) {
-                replyBox.innerHTML = `<span class="text-amber-400">Error: ${err.message}</span>`;
+                document.getElementById(id).innerHTML = `<span class="text-amber-400">Error: ${err.message}</span>`;
             }
-            container.scrollTop = container.scrollHeight;
+            output.scrollTop = output.scrollHeight;
         });
     </script>
 </body>
