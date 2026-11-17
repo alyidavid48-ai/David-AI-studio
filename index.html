@@ -460,9 +460,28 @@
       reply = `${err.message}`;
     }
 
-    publicState.chatMessages.push({ id: 'm-' + Date.now(), role: 'assistant', author: 'ASK DAVID AI', text: reply, time: 'Now' });
-      savePublicState();
+    const msgId = 'm-' + Date.now();
+      const lines = reply.split('
+');
+      publicState.chatMessages.push({ id: msgId, role: 'assistant', author: 'ASK DAVID AI', text: '', time: 'Now' });
       renderApp();
+      const scrollBottom = () => {
+        const box = document.querySelector('[class*="overflow-y-auto"]') || document.scrollingElement;
+        if (box) box.scrollTop = box.scrollHeight;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      };
+      scrollBottom();
+      for (let i = 0; i < lines.length; i++) {
+        const currentMsg = publicState.chatMessages.find(m => m.id === msgId);
+        if (currentMsg) {
+          currentMsg.text += (i === 0 ? '' : '
+') + lines[i];
+          renderApp();
+          scrollBottom();
+        }
+        if (lines[i].trim() !== '') await new Promise(r => setTimeout(r, 70));
+      }
+      savePublicState();
     }
 
     function renderPublicDirectorPanel() {
