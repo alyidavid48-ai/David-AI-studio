@@ -1,15 +1,13 @@
-export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+import { NextResponse } from 'next/server';
 
-    const { model, prompt, localGroqKey, localGeminiKey } = req.body;
-
+export async function POST(req: Request) {
     try {
+        const { model, prompt, localGroqKey, localGeminiKey } = await req.json();
+
         if (model === 'groq') {
             const apiKey = localGroqKey || process.env.davidalyiai;
             if (!apiKey) {
-                return res.status(400).json({ error: 'Groq API key missing. Please configure davidalyiai in Vercel environment variables or via Settings.' });
+                return NextResponse.json({ error: 'Groq API key missing (davidalyiai)' }, { status: 400 });
             }
 
             const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -25,13 +23,12 @@ export default async function handler(req, res) {
             });
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
-            const text = data.choices?.[0]?.message?.content || 'No response';
-            return res.status(200).json({ text });
+            return NextResponse.json({ text: data.choices?.[0]?.message?.content || 'No response' });
 
         } else {
             const apiKey = localGeminiKey || process.env.davidalyi;
             if (!apiKey) {
-                return res.status(400).json({ error: 'Gemini API key missing. Please configure davidalyi in Vercel environment variables or via Settings.' });
+                return NextResponse.json({ error: 'Gemini API key missing (davidalyi)' }, { status: 400 });
             }
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
@@ -41,10 +38,9 @@ export default async function handler(req, res) {
             });
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
-            return res.status(200).json({ text });
+            return NextResponse.json({ text: data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response' });
         }
-    } catch (err) {
-        return res.status(500).json({ error: err.message });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
