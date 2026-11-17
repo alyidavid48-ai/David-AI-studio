@@ -18,119 +18,131 @@
         }
     </script>
 </head>
-<body class="bg-obsidian-950 text-gray-100 h-screen flex flex-col font-sans">
-    <header class="bg-obsidian-900 border-b border-obsidian-800 p-4 flex justify-between items-center shadow-md">
-        <h1 class="font-bold text-lg text-white flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> DAVID Alyi studio
-        </h1>
+<body class="bg-obsidian-950 text-gray-100 h-screen flex flex-col font-sans overflow-hidden">
+    <!-- Top Navigation Bar -->
+    <header class="bg-obsidian-900 border-b border-obsidian-800 px-4 py-3 flex justify-between items-center shadow-md z-10">
         <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+            <h1 class="font-bold text-base text-white tracking-wide">DAVID Alyi studio</h1>
+        </div>
+        <div class="flex items-center gap-2">
             <select id="model-select" class="bg-obsidian-950 border border-obsidian-800 text-xs rounded-lg px-2 py-1.5 text-gray-200 focus:outline-none focus:border-emerald-500">
-                <option value="groq">Groq (Llama 3.1)</option>
-                <option value="gemini">Google Gemini</option>
+                <option value="groq">Groq (davidalyiai)</option>
+                <option value="gemini">Gemini (davidalyi)</option>
             </select>
-            <button id="settings-btn" class="text-xs bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800 px-3 py-1.5 rounded-lg text-gray-300 transition">Settings</button>
+            <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-1 rounded-lg">Production Active</span>
         </div>
     </header>
 
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-3xl w-full mx-auto">
-        <div class="flex items-start gap-3">
-            <div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] shadow-sm">
-                <p class="text-sm font-medium text-emerald-400 mb-1">Studio Online</p>
-                <p class="text-gray-200">Welcome back, N. David. DAVID Alyi studio is connected and ready.</p>
-            </div>
-        </div>
-    </main>
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="w-56 bg-obsidian-900 border-r border-obsidian-800 flex flex-col p-3 space-y-1">
+            <p class="text-[10px] uppercase font-semibold text-gray-500 px-3 pb-1 tracking-wider">Studio Workflows</p>
+            <button onclick="switchTab('chat')" id="nav-chat" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium bg-emerald-600 text-white transition flex items-center gap-2.5">💬 AI Director & Chat</button>
+            <button onclick="switchTab('image')" id="nav-image" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-400 hover:bg-obsidian-850 hover:text-gray-200 transition flex items-center gap-2.5">🎨 Image Generator</button>
+            <button onclick="switchTab('audio')" id="nav-audio" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-400 hover:bg-obsidian-850 hover:text-gray-200 transition flex items-center gap-2.5">🎵 Voice & Audio</button>
+            <button onclick="switchTab('script')" id="nav-script" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-400 hover:bg-obsidian-850 hover:text-gray-200 transition flex items-center gap-2.5">📜 Script Writer</button>
+            <button onclick="switchTab('video')" id="nav-video" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-400 hover:bg-obsidian-850 hover:text-gray-200 transition flex items-center gap-2.5">🎬 Video Editor</button>
+        </aside>
 
-    <footer class="bg-obsidian-900 border-t border-obsidian-850 p-4">
-        <form id="chat-form" class="max-w-3xl mx-auto flex gap-2">
-            <input id="user-input" type="text" placeholder="Message DAVID Alyi studio..." class="flex-1 bg-obsidian-950 border border-obsidian-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-gray-100">
-            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl text-sm font-semibold transition">Send</button>
-        </form>
-    </footer>
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col bg-obsidian-950 overflow-hidden relative">
+            <!-- Chat Tab -->
+            <div id="tab-chat" class="flex flex-col h-full">
+                <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-3xl w-full mx-auto">
+                    <div class="flex items-start gap-3">
+                        <div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] shadow-sm">
+                            <p class="text-sm font-medium text-emerald-400 mb-1">Welcome back, N. David</p>
+                            <p class="text-gray-200 text-xs leading-relaxed">DAVID Alyi studio is online, linked securely via Vercel serverless environment keys (`davidalyi` & `davidalyiai`). Choose a tool from the sidebar or type a prompt below.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 bg-obsidian-900 border-t border-obsidian-850">
+                    <form id="chat-form" class="max-w-3xl mx-auto flex gap-2">
+                        <input id="user-input" type="text" placeholder="Message DAVID Alyi studio..." class="flex-1 bg-obsidian-950 border border-obsidian-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-emerald-500 text-gray-100">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl text-xs font-semibold transition">Send</button>
+                    </form>
+                </div>
+            </div>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden p-4 z-50">
-        <div class="bg-obsidian-900 border border-obsidian-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <h2 class="text-lg font-bold text-white">Studio Configuration</h2>
-            <p class="text-xs text-gray-400">Keys are automatically loaded from Vercel environment variables or can be overridden locally below:</p>
-            <div>
-                <label class="block text-xs text-gray-400 mb-1">Groq API Key (Override)</label>
-                <input id="groq-key" type="password" placeholder="gsk_..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
+            <!-- Image Generator Tab -->
+            <div id="tab-image" class="hidden flex-1 p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-4">
+                <h2 class="text-lg font-bold text-white">Image Generator Workspace</h2>
+                <p class="text-xs text-gray-400">Generate high-fidelity visual assets, portraits, and concept artwork.</p>
+                <textarea placeholder="Describe the image you want to generate..." class="w-full bg-obsidian-900 border border-obsidian-800 rounded-xl p-3 text-xs text-gray-200 h-24 focus:outline-none focus:border-emerald-500"></textarea>
+                <button class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold">Generate Artwork</button>
             </div>
-            <div>
-                <label class="block text-xs text-gray-400 mb-1">Gemini API Key (Override)</label>
-                <input id="gemini-key" type="password" placeholder="AIza..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
+
+            <!-- Voice & Audio Tab -->
+            <div id="tab-audio" class="hidden flex-1 p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-4">
+                <h2 class="text-lg font-bold text-white">Voice & Audio Studio</h2>
+                <p class="text-xs text-gray-400">Manage vocal tracks, stems, and audio generation parameters.</p>
+                <div class="bg-obsidian-900 p-4 rounded-xl border border-obsidian-800 space-y-2">
+                    <p class="text-xs font-medium text-emerald-400">Active Microphone / Input</p>
+                    <p class="text-xs text-gray-300">Ready for vocal recording & BandLab export sync.</p>
+                </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button id="close-settings" class="bg-obsidian-850 hover:bg-obsidian-800 text-gray-300 px-4 py-2 rounded-xl text-sm transition">Cancel</button>
-                <button id="save-settings" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">Save Override</button>
+
+            <!-- Script Writer Tab -->
+            <div id="tab-script" class="hidden flex-1 p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-4">
+                <h2 class="text-lg font-bold text-white">Script Writer</h2>
+                <p class="text-xs text-gray-400">Draft lyrics, video concepts, and dialogue in English and Kinyarwanda.</p>
+                <textarea placeholder="Enter your song lyrics or video script prompt..." class="w-full bg-obsidian-900 border border-obsidian-800 rounded-xl p-3 text-xs text-gray-200 h-36 focus:outline-none focus:border-emerald-500"></textarea>
+                <button class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold">Optimize Script</button>
             </div>
-        </div>
+
+            <!-- Video Editor Tab -->
+            <div id="tab-video" class="hidden flex-1 p-6 overflow-y-auto max-w-4xl mx-auto w-full space-y-4">
+                <h2 class="text-lg font-bold text-white">Video Editor & Timeline</h2>
+                <p class="text-xs text-gray-400">Assemble visual timelines and dynamic lyric video projects.</p>
+                <div class="border-2 border-dashed border-obsidian-800 rounded-2xl p-8 text-center text-gray-400 text-xs">
+                    Drop video clips, audio stems, or images here to begin editing.
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
+        function switchTab(tab) {
+            ['chat', 'image', 'audio', 'script', 'video'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+                document.getElementById('nav-' + t).className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium text-gray-400 hover:bg-obsidian-850 hover:text-gray-200 transition flex items-center gap-2.5";
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('nav-' + tab).className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium bg-emerald-600 text-white transition flex items-center gap-2.5";
+        }
+
         const form = document.getElementById('chat-form');
         const input = document.getElementById('user-input');
         const container = document.getElementById('chat-container');
-        const settingsBtn = document.getElementById('settings-btn');
-        const settingsModal = document.getElementById('settings-modal');
-        const closeSettings = document.getElementById('close-settings');
-        const saveSettings = document.getElementById('save-settings');
-
-        settingsBtn.onclick = () => settingsModal.classList.remove('hidden');
-        closeSettings.onclick = () => settingsModal.classList.add('hidden');
-        
-        saveSettings.onclick = () => {
-            localStorage.setItem('groq_key', document.getElementById('groq-key').value);
-            localStorage.setItem('gemini_key', document.getElementById('gemini-key').value);
-            settingsModal.classList.add('hidden');
-            alert('API key override saved locally.');
-        };
-
-        if(localStorage.getItem('groq_key')) document.getElementById('groq-key').value = localStorage.getItem('groq_key');
-        if(localStorage.getItem('gemini_key')) document.getElementById('gemini-key').value = localStorage.getItem('gemini_key');
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const text = input.value.trim();
-            if (!text) return;
+            const prompt = input.value.trim();
+            if (!prompt) return;
 
-            container.innerHTML += `<div class="flex justify-end"><div class="bg-emerald-600 text-white p-3 rounded-xl max-w-[85%] text-sm">${text}</div></div>`;
+            container.innerHTML += `<div class="flex justify-end"><div class="bg-emerald-600 text-white p-3 rounded-xl max-w-[85%] text-xs">${prompt}</div></div>`;
             input.value = '';
             container.scrollTop = container.scrollHeight;
 
             const model = document.getElementById('model-select').value;
             const replyId = 'reply-' + Date.now();
-            container.innerHTML += `<div class="flex items-start gap-3"><div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] text-sm text-gray-200" id="${replyId}"><span class="animate-pulse">Thinking...</span></div></div>`;
+            container.innerHTML += `<div class="flex items-start gap-3"><div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] text-xs text-gray-200" id="${replyId}"><span class="animate-pulse">Thinking...</span></div></div>`;
             container.scrollTop = container.scrollHeight;
 
             const replyBox = document.getElementById(replyId);
 
             try {
-                if (model === 'groq') {
-                    // Pull from localStorage override first, or fallback to environment placeholder
-                    const apiKey = localStorage.getItem('groq_key') || 'VERCEL_INJECTED_GROQ_KEY';
-                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                        body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: text }] })
-                    });
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    replyBox.innerText = data.choices?.[0]?.message?.content || 'No response from Groq.';
-                } else {
-                    const apiKey = localStorage.getItem('gemini_key') || 'VERCEL_INJECTED_GEMINI_KEY';
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text }] }] })
-                    });
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    replyBox.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from Gemini.';
-                }
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model, prompt })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                replyBox.innerText = data.text;
             } catch (err) {
-                replyBox.innerHTML = `<span class="text-amber-400">API Error: ${err.message}. Please add your API key in Settings if not set in Vercel.</span>`;
+                replyBox.innerHTML = `<span class="text-amber-400">Error: ${err.message}. Check your Vercel keys (` + (model === 'groq' ? 'davidalyiai' : 'davidalyi') + `).</span>`;
             }
             container.scrollTop = container.scrollHeight;
         });
