@@ -23,14 +23,20 @@
         <h1 class="font-bold text-lg text-white flex items-center gap-2">
             <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> DAVID Alyi studio
         </h1>
-        <span class="text-xs text-gray-400">Production v1.0</span>
+        <div class="flex items-center gap-3">
+            <select id="model-select" class="bg-obsidian-950 border border-obsidian-800 text-xs rounded-lg px-2 py-1.5 text-gray-200 focus:outline-none focus:border-emerald-500">
+                <option value="groq">Groq (Llama 3.1)</option>
+                <option value="gemini">Google Gemini</option>
+            </select>
+            <button id="settings-btn" class="text-xs bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800 px-3 py-1.5 rounded-lg text-gray-300 transition">Settings</button>
+        </div>
     </header>
 
     <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-3xl w-full mx-auto">
         <div class="flex items-start gap-3">
             <div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] shadow-sm">
-                <p class="text-sm font-medium text-emerald-400 mb-1">System Ready</p>
-                <p class="text-gray-200">Welcome back, N. David. DAVID Alyi studio is online and ready for streaming prompts.</p>
+                <p class="text-sm font-medium text-emerald-400 mb-1">Studio Online</p>
+                <p class="text-gray-200">Welcome back, N. David. Select your provider and start prompting.</p>
             </div>
         </div>
     </main>
@@ -42,32 +48,96 @@
         </form>
     </footer>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden p-4 z-50">
+        <div class="bg-obsidian-900 border border-obsidian-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <h2 class="text-lg font-bold text-white">Studio Configuration</h2>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Groq API Key</label>
+                <input id="groq-key" type="password" placeholder="gsk_..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Gemini API Key</label>
+                <input id="gemini-key" type="password" placeholder="AIza..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button id="close-settings" class="bg-obsidian-850 hover:bg-obsidian-800 text-gray-300 px-4 py-2 rounded-xl text-sm transition">Cancel</button>
+                <button id="save-settings" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">Save Keys</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const form = document.getElementById('chat-form');
         const input = document.getElementById('user-input');
         const container = document.getElementById('chat-container');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettings = document.getElementById('close-settings');
+        const saveSettings = document.getElementById('save-settings');
 
-        form.addEventListener('submit', (e) => {
+        settingsBtn.onclick = () => settingsModal.classList.remove('hidden');
+        closeSettings.onclick = () => settingsModal.classList.add('hidden');
+        
+        saveSettings.onclick = () => {
+            localStorage.setItem('groq_key', document.getElementById('groq-key').value);
+            localStorage.setItem('gemini_key', document.getElementById('gemini-key').value);
+            settingsModal.classList.add('hidden');
+            alert('API Keys saved successfully locally.');
+        };
+
+        // Load saved keys on start
+        if(localStorage.getItem('groq_key')) document.getElementById('groq-key').value = localStorage.getItem('groq_key');
+        if(localStorage.getItem('gemini_key')) document.getElementById('gemini-key').value = localStorage.getItem('gemini_key');
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = input.value.trim();
             if (!text) return;
 
-            // Append user message
             container.innerHTML += `<div class="flex justify-end"><div class="bg-emerald-600 text-white p-3 rounded-xl max-w-[85%] text-sm">${text}</div></div>`;
             input.value = '';
             container.scrollTop = container.scrollHeight;
 
-            // Simulate streaming response
-            setTimeout(() => {
-                const replyId = 'reply-' + Date.now();
-                container.innerHTML += `<div class="flex items-start gap-3"><div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] text-sm text-gray-200" id="${replyId}">Streaming response...</div></div>`;
-                container.scrollTop = container.scrollHeight;
-                
-                setTimeout(() => {
-                    document.getElementById(replyId).innerText = "Line-by-line response verified successfully from DAVID Alyi studio backend.";
-                    container.scrollTop = container.scrollHeight;
-                }, 800);
-            }, 500);
+            const model = document.getElementById('model-select').value;
+            const replyId = 'reply-' + Date.now();
+            container.innerHTML += `<div class="flex items-start gap-3"><div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] text-sm text-gray-200" id="${replyId}"><span class="animate-pulse">Thinking...</span></div></div>`;
+            container.scrollTop = container.scrollHeight;
+
+            const replyBox = document.getElementById(replyId);
+
+            try {
+                if (model === 'groq') {
+                    const apiKey = localStorage.getItem('groq_key');
+                    if (!apiKey) {
+                        replyBox.innerHTML = '<span class="text-amber-400">Please open Settings and enter your Groq API key first.</span>';
+                        return;
+                    }
+                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                        body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: text }] })
+                    });
+                    const data = await res.json();
+                    replyBox.innerText = data.choices?.[0]?.message?.content || 'No response from Groq.';
+                } else {
+                    const apiKey = localStorage.getItem('gemini_key');
+                    if (!apiKey) {
+                        replyBox.innerHTML = '<span class="text-amber-400">Please open Settings and enter your Gemini API key first.</span>';
+                        return;
+                    }
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text }] }] })
+                    });
+                    const data = await res.json();
+                    replyBox.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from Gemini.';
+                }
+            } catch (err) {
+                replyBox.innerText = 'Error connecting to API: ' + err.message;
+            }
+            container.scrollTop = container.scrollHeight;
         });
     </script>
 </body>
