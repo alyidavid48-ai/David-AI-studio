@@ -12,8 +12,6 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'Groq API key missing (davidalyiai).' });
             }
 
-            // Try current active Groq model first
-            let targetModel = 'llama-3.3-70b-versatile';
             let response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -21,14 +19,13 @@ export default async function handler(req, res) {
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: targetModel,
+                    model: 'llama-3.3-70b-versatile',
                     messages: [{ role: 'user', content: prompt }]
                 })
             });
 
             let data = await response.json();
 
-            // Auto-fallback: if that model isn't enabled on this key, fetch the first available model from Groq
             if (data.error) {
                 const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
                     headers: { 'Authorization': `Bearer ${apiKey}` }
@@ -62,12 +59,29 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'Gemini API key missing (davidalyi).' });
             }
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
-            const data = await response.json();
+            let data = await response.json();
+
+            // Auto-fallback: fetch the first generateContent-compatible model on your key if needed
+            if (data.error) {
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                const listData = await listRes.json();
+                const validModel = listData.models?.find(m => m.supportedGenerationMethods?.includes('generateContent') && m.name.includes('flash'))?.name;
+
+                if (validModel) {
+                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${validModel}:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    data = await response.json();
+                }
+            }
+
             if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
             return res.status(200).json({ text });
