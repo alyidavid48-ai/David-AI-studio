@@ -5,9 +5,8 @@ export default async function handler(req, res) {
 
     const { model, prompt, localGroqKey, localGeminiKey } = req.body;
 
-    // Enforce professional international identity for DAVID Alyi studio
     const systemInstruction = `You are DAVID AI, the official intelligent assistant of DAVID Alyi studio, created and engineered by N. David (David Alyi). 
-Never identify yourself as Qwen, ChatGPT, OpenAI, Alibaba, Google, or any third-party model. 
+Never identify yourself as Qwen, ChatGPT, OpenAI, Alibaba, Google, Meta, or any third-party model. 
 If asked who created you or who you are, state clearly and professionally that you are DAVID AI, developed by N. David for DAVID Alyi studio. 
 Maintain a sharp, helpful, and international executive tone.`;
 
@@ -18,8 +17,12 @@ Maintain a sharp, helpful, and international executive tone.`;
                 return res.status(400).json({ error: 'Groq API key missing (davidalyiai).' });
             }
 
-            // Use fast, high-limit production models first
-            const preferredGroqModels = ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'gemma2-9b-it'];
+            const preferredGroqModels = [
+                'llama-3.1-8b-instant',
+                'llama3-8b-8192',
+                'gemma2-9b-it',
+                'llama-3.3-70b-versatile'
+            ];
             let data = null;
 
             for (const targetModel of preferredGroqModels) {
@@ -42,16 +45,16 @@ Maintain a sharp, helpful, and international executive tone.`;
                 if (!data.error) break;
             }
 
-            // Fallback to safe, small active models only (avoids 27B/70B rate limits)
+            // Strictly filter for standard Llama/Gemma chat models only (no TTS, Orpheus, Whisper, or Guard)
             if (data?.error) {
                 const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
                     headers: { 'Authorization': `Bearer ${apiKey}` }
                 });
                 const modelsData = await modelsRes.json();
                 const safeModel = modelsData.data?.find(m => 
-                    !m.id.includes('whisper') && 
-                    !m.id.includes('guard') && 
-                    !m.id.includes('27b') &&
+                    (m.id.includes('llama') || m.id.includes('gemma')) &&
+                    !m.id.includes('guard') &&
+                    !m.id.includes('vision') &&
                     !m.id.includes('70b')
                 )?.id;
 
