@@ -17,15 +17,36 @@ Maintain a sharp, helpful, and international executive tone.`;
                 return res.status(400).json({ error: 'Groq API key missing (davidalyiai).' });
             }
 
-            const preferredGroqModels = [
-                'llama-3.1-8b-instant',
-                'llama3-8b-8192',
-                'gemma2-9b-it',
-                'llama-3.3-70b-versatile'
-            ];
-            let data = null;
+            // 1. Fetch exact models enabled on this specific Groq API key
+            const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
+                headers: { 'Authorization': `Bearer ${apiKey}` }
+            });
+            const modelsData = await modelsRes.json();
 
-            for (const targetModel of preferredGroqModels) {
+            if (modelsData.error) {
+                throw new Error(modelsData.error.message || JSON.stringify(modelsData.error));
+            }
+
+            // 2. Keep only standard chat models (exclude audio/TTS/safety/oversized 27b)
+            const blockedKeywords = ['whisper', 'orpheus', 'tts', 'guard', 'vision', '27b', 'compound'];
+            const availableModels = (modelsData.data || [])
+                .map(m => m.id)
+                .filter(id => !blockedKeywords.some(word => id.toLowerCase().includes(word)));
+
+            if (availableModels.length === 0) {
+                throw new Error('No active text models found on your Groq account.');
+            }
+
+            // Prioritize smaller/faster models first so free-tier token limits never trigger
+            availableModels.sort((a, b) => {
+                const aSmall = a.includes('8b') || a.includes('9b') || a.includes('20b') || a.includes('instant') ? -1 : 1;
+                const bSmall = b.includes('8b') || b.includes('9b') || b.includes('20b') || b.includes('instant') ? -1 : 1;
+                return aSmall - bSmall;
+            });
+
+            // 3. Try each enabled model on your key until one succeeds
+            let data = null;
+            for (const validModel of availableModels) {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -33,52 +54,19 @@ Maintain a sharp, helpful, and international executive tone.`;
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: targetModel,
+                        model: validModel,
                         messages: [
                             { role: 'system', content: systemInstruction },
                             { role: 'user', content: prompt }
                         ],
-                        max_tokens: 1024
+                        max_tokens: 512
                     })
                 });
                 data = await response.json();
                 if (!data.error) break;
             }
 
-            // Strictly filter for standard Llama/Gemma chat models only (no TTS, Orpheus, Whisper, or Guard)
-            if (data?.error) {
-                const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
-                    headers: { 'Authorization': `Bearer ${apiKey}` }
-                });
-                const modelsData = await modelsRes.json();
-                const safeModel = modelsData.data?.find(m => 
-                    (m.id.includes('llama') || m.id.includes('gemma')) &&
-                    !m.id.includes('guard') &&
-                    !m.id.includes('vision') &&
-                    !m.id.includes('70b')
-                )?.id;
-
-                if (safeModel) {
-                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: safeModel,
-                            messages: [
-                                { role: 'system', content: systemInstruction },
-                                { role: 'user', content: prompt }
-                            ],
-                            max_tokens: 1024
-                        })
-                    });
-                    data = await response.json();
-                }
-            }
-
-            if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+            if (data?.error) throw new Error(data.error.message || JSON.stringify(data.error));
             const text = data.choices?.[0]?.message?.content || 'No response';
             return res.status(200).json({ text });
 
