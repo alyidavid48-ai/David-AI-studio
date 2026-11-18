@@ -17,36 +17,11 @@ Maintain a sharp, helpful, and international executive tone.`;
                 return res.status(400).json({ error: 'Groq API key missing (davidalyiai).' });
             }
 
-            // 1. Fetch exact models enabled on this specific Groq API key
-            const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
-                headers: { 'Authorization': `Bearer ${apiKey}` }
-            });
-            const modelsData = await modelsRes.json();
-
-            if (modelsData.error) {
-                throw new Error(modelsData.error.message || JSON.stringify(modelsData.error));
-            }
-
-            // 2. Keep only standard chat models (exclude audio/TTS/safety/oversized 27b)
-            const blockedKeywords = ['whisper', 'orpheus', 'tts', 'guard', 'vision', '27b', 'compound'];
-            const availableModels = (modelsData.data || [])
-                .map(m => m.id)
-                .filter(id => !blockedKeywords.some(word => id.toLowerCase().includes(word)));
-
-            if (availableModels.length === 0) {
-                throw new Error('No active text models found on your Groq account.');
-            }
-
-            // Prioritize smaller/faster models first so free-tier token limits never trigger
-            availableModels.sort((a, b) => {
-                const aSmall = a.includes('8b') || a.includes('9b') || a.includes('20b') || a.includes('instant') ? -1 : 1;
-                const bSmall = b.includes('8b') || b.includes('9b') || b.includes('20b') || b.includes('instant') ? -1 : 1;
-                return aSmall - bSmall;
-            });
-
-            // 3. Try each enabled model on your key until one succeeds
+            // Use verified active models on your key in order of speed/reliability
+            const activeGroqModels = ['openai/gpt-oss-20b', 'allam-2-7b', 'openai/gpt-oss-120b'];
             let data = null;
-            for (const validModel of availableModels) {
+
+            for (const targetModel of activeGroqModels) {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -54,12 +29,12 @@ Maintain a sharp, helpful, and international executive tone.`;
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: validModel,
+                        model: targetModel,
                         messages: [
                             { role: 'system', content: systemInstruction },
                             { role: 'user', content: prompt }
                         ],
-                        max_tokens: 512
+                        max_tokens: 1024
                     })
                 });
                 data = await response.json();
@@ -76,44 +51,23 @@ Maintain a sharp, helpful, and international executive tone.`;
                 return res.status(400).json({ error: 'Gemini API key missing (davidalyi).' });
             }
 
-            const geminiPayload = {
-                systemInstruction: {
-                    parts: [{ text: systemInstruction }]
-                },
-                contents: [{
-                    role: 'user',
-                    parts: [{ text: prompt }]
-                }]
-            };
+            const activeGeminiModels = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.5-flash'];
+            let data = null;
 
-            let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(geminiPayload)
-            });
-            let data = await response.json();
-
-            if (data.error) {
-                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                const listData = await listRes.json();
-                const validModel = listData.models?.find(m => 
-                    m.supportedGenerationMethods?.includes('generateContent') && 
-                    m.name.includes('flash') && 
-                    !m.name.includes('2.5') &&
-                    !m.name.includes('1.5')
-                )?.name;
-
-                if (validModel) {
-                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${validModel}:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(geminiPayload)
-                    });
-                    data = await response.json();
-                }
+            for (const targetModel of activeGeminiModels) {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        systemInstruction: { parts: [{ text: systemInstruction }] },
+                        contents: [{ role: 'user', parts: [{ text: prompt }] }]
+                    })
+                });
+                data = await response.json();
+                if (!data.error) break;
             }
 
-            if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+            if (data?.error) throw new Error(data.error.message || JSON.stringify(data.error));
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
             return res.status(200).json({ text });
         }
