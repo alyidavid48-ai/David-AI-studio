@@ -9,21 +9,49 @@ export default async function handler(req, res) {
         if (model === 'groq') {
             const apiKey = localGroqKey || process.env.davidalyiai;
             if (!apiKey) {
-                return res.status(400).json({ error: 'Groq API key missing. Add davidalyiai in Vercel or paste a key in Settings.' });
+                return res.status(400).json({ error: 'Groq API key missing (davidalyiai).' });
             }
 
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            // Try current active Groq model first
+            let targetModel = 'llama-3.3-70b-versatile';
+            let response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: 'llama-3.1-8b-instant',
+                    model: targetModel,
                     messages: [{ role: 'user', content: prompt }]
                 })
             });
-            const data = await response.json();
+
+            let data = await response.json();
+
+            // Auto-fallback: if that model isn't enabled on this key, fetch the first available model from Groq
+            if (data.error) {
+                const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                const modelsData = await modelsRes.json();
+                const validModel = modelsData.data?.find(m => !m.id.includes('whisper') && !m.id.includes('guard'))?.id;
+
+                if (validModel) {
+                    response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: validModel,
+                            messages: [{ role: 'user', content: prompt }]
+                        })
+                    });
+                    data = await response.json();
+                }
+            }
+
             if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
             const text = data.choices?.[0]?.message?.content || 'No response';
             return res.status(200).json({ text });
@@ -31,10 +59,10 @@ export default async function handler(req, res) {
         } else {
             const apiKey = localGeminiKey || process.env.davidalyi;
             if (!apiKey) {
-                return res.status(400).json({ error: 'Gemini API key missing. Add davidalyi in Vercel or paste a key in Settings.' });
+                return res.status(400).json({ error: 'Gemini API key missing (davidalyi).' });
             }
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
