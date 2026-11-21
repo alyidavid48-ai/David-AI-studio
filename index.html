@@ -28,7 +28,7 @@
                 <option value="groq">Groq (davidalyiai)</option>
                 <option value="gemini">Gemini (davidalyi)</option>
             </select>
-            <button id="settings-btn" class="text-xs bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800 px-3 py-1.5 rounded-lg text-gray-300 transition">Settings</button>
+            
         </div>
     </header>
 
@@ -48,101 +48,72 @@
         </form>
     </footer>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden p-4 z-50">
-        <div class="bg-obsidian-900 border border-obsidian-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <h2 class="text-lg font-bold text-white">Studio Configuration</h2>
-            <p class="text-xs text-gray-400">Your Vercel environment variables (<code class="text-emerald-400">davidalyi</code> & <code class="text-emerald-400">davidalyiai</code>) load automatically. Leave these blank unless you want to override them locally:</p>
-            <div>
-                <label class="block text-xs text-gray-400 mb-1">Groq Key Override (davidalyiai)</label>
-                <input id="groq-key" type="password" placeholder="Optional: gsk_..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
-            </div>
-            <div>
-                <label class="block text-xs text-gray-400 mb-1">Gemini Key Override (davidalyi)</label>
-                <input id="gemini-key" type="password" placeholder="Optional: AIza..." class="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500">
-            </div>
-            <div class="flex justify-between items-center pt-2">
-                <button id="clear-settings" class="text-xs text-rose-400 hover:text-rose-300 transition">Clear Overrides</button>
-                <div class="flex gap-2">
-                    <button id="close-settings" class="bg-obsidian-850 hover:bg-obsidian-800 text-gray-300 px-4 py-2 rounded-xl text-sm transition">Cancel</button>
-                    <button id="save-settings" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
+<script>
+const form = document.getElementById('chat-form');
+const input = document.getElementById('user-input');
+const container = document.getElementById('chat-container');
 
-    <script>
-        const settingsBtn = document.getElementById('settings-btn');
-        const settingsModal = document.getElementById('settings-modal');
-        const closeSettings = document.getElementById('close-settings');
-        const saveSettings = document.getElementById('save-settings');
-        const clearSettings = document.getElementById('clear-settings');
+const API_URL = 'https://davidaibanked.alyidavid48.workers.dev/api/chat';
 
-        settingsBtn.onclick = () => settingsModal.classList.remove('hidden');
-        closeSettings.onclick = () => settingsModal.classList.add('hidden');
-        
-        saveSettings.onclick = () => {
-            localStorage.setItem('groq_key', document.getElementById('groq-key').value.trim());
-            localStorage.setItem('gemini_key', document.getElementById('gemini-key').value.trim());
-            settingsModal.classList.add('hidden');
-        };
+function addMessage(text, type) {
+    const row = document.createElement('div');
+    row.className = type === 'user'
+        ? 'flex justify-end'
+        : 'flex items-start gap-3';
 
-        clearSettings.onclick = () => {
-            localStorage.removeItem('groq_key');
-            localStorage.removeItem('gemini_key');
-            document.getElementById('groq-key').value = '';
-            document.getElementById('gemini-key').value = '';
-            settingsModal.classList.add('hidden');
-        };
+    const box = document.createElement('div');
+    box.className = type === 'user'
+        ? 'bg-emerald-600 text-white p-3 rounded-xl max-w-[85%] text-sm'
+        : 'bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] text-sm text-gray-200';
 
-        if(localStorage.getItem('groq_key')) document.getElementById('groq-key').value = localStorage.getItem('groq_key');
-        if(localStorage.getItem('gemini_key')) document.getElementById('gemini-key').value = localStorage.getItem('gemini_key');
+    box.textContent = text;
+    row.appendChild(box);
+    container.appendChild(row);
+    container.scrollTop = container.scrollHeight;
 
-        const form = document.getElementById('chat-form');
-        const input = document.getElementById('user-input');
-        const container = document.getElementById('chat-container');
+    return box;
+}
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const prompt = input.value.trim();
-            if (!prompt) return;
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            container.innerHTML += `<div class="flex justify-end"><div class="bg-emerald-600 text-white p-3 rounded-xl max-w-[85%] text-sm">${prompt}</div></div>`;
-            input.value = '';
-            container.scrollTop = container.scrollHeight;
+    const message = input.value.trim();
+    if (!message) return;
 
-            const model = document.getElementById('model-select').value;
-            const replyId = 'reply-' + Date.now();
-            container.innerHTML += `<div class="flex items-start gap-3"><div class="bg-obsidian-850 p-4 rounded-xl border border-obsidian-800 max-w-[85%] text-sm text-gray-200" id="${replyId}"><span class="animate-pulse">Thinking...</span></div></div>`;
-            container.scrollTop = container.scrollHeight;
+    addMessage(message, 'user');
+    input.value = '';
 
-            const replyBox = document.getElementById(replyId);
+    const replyBox = addMessage('Thinking...', 'assistant');
+    const sendButton = form.querySelector('button[type="submit"]');
+    sendButton.disabled = true;
+    sendButton.textContent = 'Sending...';
 
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        model, 
-                        prompt,
-                        localGroqKey: localStorage.getItem('groq_key') || '',
-                        localGeminiKey: localStorage.getItem('gemini_key') || ''
-                    })
-                });
+    try {
+        const model = document.getElementById('model-select').value;
 
-                const contentType = res.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server error. Check Vercel deployment logs.");
-                }
-
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-                replyBox.innerText = data.text;
-            } catch (err) {
-                replyBox.innerHTML = `<span class="text-amber-400">Error: ${err.message}</span>`;
-            }
-            container.scrollTop = container.scrollHeight;
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, message })
         });
-    </script>
+
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+            throw new Error(data.error || 'AI server request failed.');
+        }
+
+        replyBox.textContent = data.reply || data.text || 'No response received.';
+    } catch (err) {
+        replyBox.textContent = 'Error: ' + err.message;
+        replyBox.classList.add('text-amber-400');
+    } finally {
+        sendButton.disabled = false;
+        sendButton.textContent = 'Send';
+        container.scrollTop = container.scrollHeight;
+    }
+});
+</script>
 </body>
 </html>
